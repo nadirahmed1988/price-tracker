@@ -173,33 +173,154 @@
 <div class="toast" id="toast"></div>
 
 <!-- ZXing for still image decoding -->
-<script src="https://unpkg.com/@zxing/library@0.12.3"></script>
+
 <script>
 const APPS_SCRIPT_URL = "https://script.google.com/a/macros/nadirahmed.com/s/AKfycbw89SQyd1n67KrWkBwpvbaHsSmCUOqQ7BdqvBY_T6MnWupoEz-ImICiKLqD6dkRpESufg/exec";
 
 let currentBarcode = null;
 let currentProduct = null;
 let summaryCache   = null;
-let zxingReader    = null;
 
-// Initialise ZXing reader
-window.addEventListener('load', () => {
-  try {
-    const hints = new Map();
-    const formats = [
-      ZXing.BarcodeFormat.EAN_13,
-      ZXing.BarcodeFormat.EAN_8,
-      ZXing.BarcodeFormat.UPC_A,
-      ZXing.BarcodeFormat.UPC_E
-    ];
-    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
-    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-    zxingReader = new ZXing.MultiFormatReader();
-    zxingReader.setHints(hints);
-  } catch(e) {
-    console.warn('ZXing init failed:', e);
+// Inline EAN-13 decoder - no external dependencies
+// Lightweight inline EAN-13/EAN-8/UPC-A decoder
+// Works on a canvas ImageData object - no external dependencies
+
+const EAN_DECODER = (() => {
+  // EAN-13 encoding tables
+  const L = ['0001101','0011001','0010011','0111101','0100011','0110001','0101111','0111011','0110111','0001011'];
+  const G = ['0100111','0110011','0011011','0100001','0011101','0111001','0000101','0010001','0001001','0010111'];
+  const R = ['1110010','1100110','1101100','1000010','1011100','1001110','1010000','1000100','1001000','1110100'];
+  
+  const FIRST_DIGIT_MAP = {
+    'LLLLLL':'0','LLGLGG':'1','LLGGLG':'2','LLGGGL':'3',
+    'LGLLGG':'4','LGGLLG':'5','LGGGLL':'6','LGLGLG':'7',
+    'LGLGGL':'8','LGGLGL':'9'
+  };
+
+  function getRowData(imageData, width, height, row) {
+    const data = [];
+    const y = Math.floor(height * row);
+    for (let x = 0; x < width; x++) {
+      const idx = (y * width + x) * 4;
+      const lum = 0.299 * imageData.data[idx] + 0.587 * imageData.data[idx+1] + 0.114 * imageData.data[idx+2];
+      data.push(lum < 128 ? 1 : 0);
+    }
+    return data;
   }
-});
+
+  function findRuns(row) {
+    const runs = [];
+    let cur = row[0], count = 1;
+    for (let i = 1; i < row.length; i++) {
+      if (row[i] === cur) { count++; }
+      else { runs.push({ val: cur, len: count }); cur = row[i]; count = 1; }
+    }
+    runs.push({ val: cur, len: count });
+    return runs;
+  }
+
+  function decodeDigit(bits, tables) {
+    for (let i = 0; i < 10; i++) {
+      for (const tbl of tables) {
+        if (tbl[i] === bits) return { digit: i, table: tbl === L ? 'L' : tbl === G ? 'G' : 'R' };
+      }
+    }
+    return null;
+  }
+
+  function runsToBits(runs, unitWidth, count) {
+    let bits = '';
+    for (const run of runs) {
+      const n = Math.max(1, Math.round(run.len / unitWidth));
+      bits += String(run.val).repeat(n);
+      if (bits.length >= count) break;
+    }
+    return bits.substring(0, count);
+  }
+
+  function tryDecodeEAN13(row) {
+    const runs = findRuns(row);
+    // Find start guard (101)
+    for (let i = 0; i < runs.length - 50; i++) {
+      if (runs[i].val !== 1) continue;
+      const unit = runs[i].len;
+      if (unit < 1) continue;
+
+      // Check start guard pattern 1-0-1
+      if (Math.round(runs[i+1].len/unit) !== 1) continue;
+      if (Math.round(runs[i+2].len/unit) !== 1) continue;
+
+      let pos = i + 3;
+      const leftDigits = [];
+      const leftTables = [];
+
+      // Decode 6 left digits (7 bits each)
+      for (let d = 0; d < 6; d++) {
+        if (pos + 3 >= runs.length) return null;
+        const bits = runsToBits(runs.slice(pos, pos+4), unit, 7);
+        const result = decodeDigit(bits, [L, G]);
+        if (!result) return null;
+        leftDigits.push(result.digit);
+        leftTables.push(result.table);
+        pos += 4;
+      }
+
+      // Middle guard (01010)
+      if (pos + 2 >= runs.length) return null;
+      pos += 5;
+
+      // Decode 6 right digits
+      const rightDigits = [];
+      for (let d = 0; d < 6; d++) {
+        if (pos + 3 >= runs.length) return null;
+        const bits = runsToBits(runs.slice(pos, pos+4), unit, 7);
+        const result = decodeDigit(bits, [R]);
+        if (!result) return null;
+        rightDigits.push(result.digit);
+        pos += 4;
+      }
+
+      // Determine first digit from parity pattern
+      const parityKey = leftTables.join('');
+      const firstDigit = FIRST_DIGIT_MAP[parityKey];
+      if (firstDigit === undefined) return null;
+
+      const digits = [parseInt(firstDigit), ...leftDigits, ...rightDigits];
+      
+      // Verify checksum
+      let sum = 0;
+      for (let k = 0; k < 12; k++) {
+        sum += digits[k] * (k % 2 === 0 ? 1 : 3);
+      }
+      const check = (10 - (sum % 10)) % 10;
+      if (check !== digits[12]) return null;
+
+      return digits.join('');
+    }
+    return null;
+  }
+
+  return {
+    decode(canvas) {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width, h = canvas.height;
+      const imageData = ctx.getImageData(0, 0, w, h);
+      
+      // Try multiple horizontal scan lines
+      const scanRows = [0.3, 0.4, 0.5, 0.6, 0.7, 0.35, 0.45, 0.55, 0.65];
+      for (const rowFrac of scanRows) {
+        const row = getRowData(imageData, w, h, rowFrac);
+        const result = tryDecodeEAN13(row);
+        if (result) return result;
+        // Try reversed
+        const resultRev = tryDecodeEAN13([...row].reverse());
+        if (resultRev) return resultRev;
+      }
+      return null;
+    }
+  };
+})();
+
 
 // ── Image handler ─────────────────────────────────────────────
 async function handleImage(event) {
@@ -223,58 +344,39 @@ async function handleImage(event) {
     } catch(e) {}
   }
 
-  // ZXing fallback
-  if (zxingReader) {
-    try {
+  // Inline EAN decoder fallback
+  try {
       const barcode = await decodeWithZXing(file);
       document.getElementById('processing').classList.remove('show');
       if (barcode) { processBarcode(barcode); return; }
-    } catch(e) {}
-  }
+  } catch(e) {}
 
   document.getElementById('processing').classList.remove('show');
   document.getElementById('retryTip').classList.add('show');
 }
 
-// ── ZXing decoder ─────────────────────────────────────────────
+// ── Inline EAN decoder ───────────────────────────────────────
 function decodeWithZXing(file) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
-
     img.onload = () => {
       URL.revokeObjectURL(url);
       try {
-        // Try at multiple scales for better accuracy
-        const scales = [1, 0.75, 0.5];
+        // Try multiple scales
+        const scales = [1, 1.5, 0.75, 0.5];
         for (const scale of scales) {
           const canvas  = document.createElement('canvas');
           canvas.width  = Math.round(img.width * scale);
           canvas.height = Math.round(img.height * scale);
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const luminance = new ZXing.RGBLuminanceSource(
-            imageData.data, canvas.width, canvas.height
-          );
-          const binarized = new ZXing.HybridBinarizer(luminance);
-          const bitmap    = new ZXing.BinaryBitmap(binarized);
-          try {
-            const result = zxingReader.decode(bitmap);
-            if (result && result.getText()) {
-              resolve(result.getText());
-              return;
-            }
-          } catch(e) {
-            // Try next scale
-          }
+          const result = EAN_DECODER.decode(canvas);
+          if (result) { resolve(result); return; }
         }
         resolve(null);
-      } catch(e) {
-        reject(e);
-      }
+      } catch(e) { reject(e); }
     };
-
     img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image load failed')); };
     img.src = url;
   });
