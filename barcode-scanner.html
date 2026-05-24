@@ -8,7 +8,6 @@
 <title>Price Tracker — Scanner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 <style>
   :root {
     --navy: #1B2A4A; --teal: #2A7F7F; --teal-light: #e0f0f0;
@@ -30,22 +29,38 @@
   .body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 16px calc(var(--safe-bottom) + 24px); }
   .card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
   .card-title { font-size: 11px; font-weight: 600; color: var(--mid); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 12px; }
-  .scanner-area { position: relative; background: #000; border-radius: var(--radius-sm); overflow: hidden; aspect-ratio: 4/3; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; }
-  #interactive { width: 100%; height: 100%; position: absolute; inset: 0; }
-  #interactive canvas { display: none; }
-  #interactive video { width: 100%; height: 100%; object-fit: cover; }
-  .scanner-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-  .scanner-frame { width: 70%; height: 30%; border: 2px solid rgba(91,200,200,0.8); border-radius: 8px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.45); position: relative; }
-  .scanner-line { position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: rgba(91,200,200,0.9); animation: scan 1.8s ease-in-out infinite; }
-  @keyframes scan { 0%,100% { top: 15%; } 50% { top: 85%; } }
-  .scanner-placeholder { color: rgba(255,255,255,0.5); font-size: 13px; text-align: center; padding: 20px; }
-  .scan-btn { width: 100%; padding: 13px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; font-family: 'DM Sans', sans-serif; border: none; cursor: pointer; transition: opacity 0.12s; }
-  .scan-btn.start { background: var(--teal); color: #fff; }
-  .scan-btn.stop  { background: #555; color: #fff; }
-  .barcode-manual { display: flex; gap: 8px; margin-top: 10px; }
+
+  /* Scan area */
+  .scan-area { text-align: center; padding: 8px 0 4px; }
+  .scan-icon { font-size: 56px; margin-bottom: 12px; display: block; }
+  .scan-label { font-size: 14px; color: var(--mid); margin-bottom: 16px; line-height: 1.4; }
+  .scan-label strong { color: var(--text); display: block; font-size: 16px; margin-bottom: 4px; }
+
+  /* Hidden file input */
+  #barcodeInput { display: none; }
+
+  /* Big scan button */
+  .scan-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; background: var(--teal); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 17px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: opacity 0.12s, transform 0.1s; margin-bottom: 10px; }
+  .scan-btn:active { opacity: 0.85; transform: scale(0.98); }
+  .scan-btn-icon { font-size: 20px; }
+
+  .divider-text { text-align: center; font-size: 12px; color: var(--mid); margin: 8px 0; position: relative; }
+  .divider-text::before, .divider-text::after { content: ''; position: absolute; top: 50%; width: 42%; height: 1px; background: var(--border); }
+  .divider-text::before { left: 0; }
+  .divider-text::after { right: 0; }
+
+  .barcode-manual { display: flex; gap: 8px; }
   .barcode-manual input { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 15px; font-family: 'DM Sans', sans-serif; background: var(--warm-grey); outline: none; }
   .barcode-manual input:focus { border-color: var(--teal); background: #fff; }
   .barcode-manual button { padding: 10px 16px; background: var(--navy); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; }
+
+  /* Processing state */
+  .processing { display: none; align-items: center; justify-content: center; gap: 10px; padding: 16px; font-size: 14px; color: var(--mid); }
+  .processing.show { display: flex; }
+  .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--teal); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Product info */
   .product-found { background: var(--teal-light); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 12px; }
   .product-found .name { font-size: 15px; font-weight: 600; color: var(--navy); line-height: 1.3; }
   .product-found .barcode-num { font-size: 12px; color: var(--teal); margin-top: 2px; font-family: monospace; }
@@ -53,17 +68,23 @@
   .source-db     { background: #e8eaf6; color: #3949ab; }
   .source-log    { background: var(--green-bg); color: var(--green-fg); }
   .source-manual { background: var(--amber-bg); color: var(--amber-fg); }
+
+  /* History */
   .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
   .stat { background: var(--warm-grey); border-radius: var(--radius-sm); padding: 10px 12px; }
   .stat .lbl { font-size: 11px; color: var(--mid); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
   .stat .val { font-size: 18px; font-weight: 700; color: var(--text); margin-top: 2px; }
   .stat .val.best { color: var(--teal); }
   .no-history { font-size: 13px; color: var(--mid); font-style: italic; }
+
+  /* Fields */
   .field { margin-bottom: 12px; }
   .field label { display: block; font-size: 12px; font-weight: 500; color: var(--mid); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
   .field input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 15px; font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--warm-grey); outline: none; }
   .field input:focus { border-color: var(--teal); background: #fff; }
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Comparison */
   .comparison { display: none; margin-top: 12px; }
   .comparison.show { display: block; }
   .verdict { padding: 11px 14px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 700; text-align: center; margin-bottom: 10px; }
@@ -75,24 +96,27 @@
   .comp-row:last-child { border-bottom: none; }
   .comp-row .lbl { color: var(--mid); }
   .comp-row .val { font-weight: 500; }
+
+  /* Actions */
   .action-row { display: flex; gap: 8px; margin-top: 14px; }
   .action-btn { flex: 1; padding: 13px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; font-family: 'DM Sans', sans-serif; border: none; cursor: pointer; transition: opacity 0.12s, transform 0.1s; }
   .action-btn:active { opacity: 0.85; transform: scale(0.98); }
   .action-btn.buy  { background: var(--navy); color: #fff; }
   .action-btn.skip { background: var(--warm-grey); color: var(--text); }
+  .action-btn:disabled { opacity: 0.5; }
+
   .log-confirm { display: none; background: var(--green-bg); border-radius: var(--radius-sm); padding: 14px; text-align: center; margin-top: 12px; }
   .log-confirm.show { display: block; }
   .log-confirm p { font-size: 14px; color: var(--green-fg); font-weight: 500; }
   .log-confirm .sub { font-size: 12px; color: var(--green-fg); opacity: 0.8; margin-top: 4px; }
+
   .reset-btn { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; color: var(--mid); font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 4px; }
   .reset-btn:active { background: var(--warm-grey); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 4px 0 12px; }
+
   .toast { position: fixed; bottom: calc(var(--safe-bottom) + 24px); left: 50%; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 11px 22px; border-radius: 30px; font-size: 14px; font-weight: 500; opacity: 0; transition: opacity 0.25s; pointer-events: none; white-space: nowrap; z-index: 999; max-width: 90%; text-align: center; }
   .toast.show { opacity: 1; }
-  .loading { display: none; align-items: center; gap: 8px; font-size: 13px; color: var(--mid); padding: 4px 0; }
-  .loading.show { display: flex; }
-  .spinner { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--teal); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .divider { border: none; border-top: 1px solid var(--border); margin: 4px 0 12px; }
 </style>
 </head>
 <body>
@@ -106,24 +130,37 @@
     <!-- Step 1: Scan -->
     <div class="card" id="cardScan">
       <div class="card-title">Scan barcode</div>
-      <div class="scanner-area">
-        <div id="interactive"></div>
-        <div class="scanner-overlay" id="scannerOverlay" style="display:none;">
-          <div class="scanner-frame"><div class="scanner-line"></div></div>
-        </div>
-        <div class="scanner-placeholder" id="scannerPlaceholder">Tap below to start camera</div>
+      <div class="scan-area">
+        <span class="scan-icon">📷</span>
+        <p class="scan-label">
+          <strong>Point your camera at a barcode</strong>
+          Tap the button below — iOS will open your camera. Take the photo and it'll read the barcode automatically.
+        </p>
       </div>
-      <button class="scan-btn start" id="scanBtn" onclick="toggleScanner()">Start Scanner</button>
+
+      <!-- Hidden file input — capture=environment opens rear camera -->
+      <input type="file" id="barcodeInput" accept="image/*" capture="environment" onchange="handleImage(event)" />
+
+      <button class="scan-btn" onclick="document.getElementById('barcodeInput').click()">
+        <span class="scan-btn-icon">⬛</span> Scan Barcode
+      </button>
+
+      <div class="divider-text">or</div>
+
       <div class="barcode-manual">
-        <input type="number" id="manualBarcode" placeholder="Or enter barcode manually..." />
-        <button onclick="lookupBarcode(document.getElementById('manualBarcode').value)">Look up</button>
+        <input type="number" id="manualBarcode" placeholder="Enter barcode number..." />
+        <button onclick="processBarcode(document.getElementById('manualBarcode').value)">Look up</button>
+      </div>
+
+      <div class="processing" id="processing">
+        <span class="spinner"></span> Reading barcode...
       </div>
     </div>
 
     <!-- Step 2: Product + history -->
     <div class="card" id="cardProduct" style="display:none;">
       <div class="card-title">Product</div>
-      <div class="product-found" id="productFound">
+      <div class="product-found">
         <div class="name" id="productName">—</div>
         <div class="barcode-num" id="barcodeDisplay">—</div>
         <span class="source-badge" id="sourceBadge"></span>
@@ -134,30 +171,26 @@
       </div>
       <hr class="divider">
       <div class="card-title">Your price history</div>
-      <div class="loading" id="historyLoading"><span class="spinner"></span> Checking your records...</div>
+      <div class="processing" id="historyLoading"><span class="spinner"></span> Checking your records...</div>
       <div id="historyContent"></div>
     </div>
 
-    <!-- Step 3: Offer details -->
+    <!-- Step 3: Offer -->
     <div class="card" id="cardOffer" style="display:none;">
       <div class="card-title">This offer</div>
       <div class="field-row">
-        <div class="field">
-          <label>Pack size</label>
+        <div class="field"><label>Pack size</label>
           <input type="number" id="offerPack" placeholder="e.g. 485" oninput="calcComparison()" />
         </div>
-        <div class="field">
-          <label>Unit</label>
+        <div class="field"><label>Unit</label>
           <input type="text" id="offerUnit" placeholder="e.g. g" />
         </div>
       </div>
       <div class="field-row">
-        <div class="field">
-          <label>Price (£)</label>
+        <div class="field"><label>Price (£)</label>
           <input type="number" step="0.01" id="offerPrice" placeholder="0.00" oninput="calcComparison()" />
         </div>
-        <div class="field">
-          <label>Qty to buy</label>
+        <div class="field"><label>Qty to buy</label>
           <input type="number" id="offerQty" value="1" min="1" />
         </div>
       </div>
@@ -166,11 +199,11 @@
         <div id="compRows"></div>
       </div>
       <div class="action-row">
-        <button class="action-btn buy" onclick="logPurchase()">Buy — Log it</button>
+        <button class="action-btn buy" id="buyBtn" onclick="logPurchase()">Buy — Log it</button>
         <button class="action-btn skip" onclick="resetAll()">Skip</button>
       </div>
       <div class="log-confirm" id="logConfirm">
-        <p id="logConfirmMsg">✓ Logged</p>
+        <p id="logConfirmMsg"></p>
         <div class="sub" id="logConfirmSub"></div>
       </div>
     </div>
@@ -184,68 +217,52 @@
 <script>
 const APPS_SCRIPT_URL = "https://script.google.com/a/macros/nadirahmed.com/s/AKfycbw89SQyd1n67KrWkBwpvbaHsSmCUOqQ7BdqvBY_T6MnWupoEz-ImICiKLqD6dkRpESufg/exec";
 
-let scanning       = false;
-let scanCooldown   = false;
 let currentBarcode = null;
 let currentProduct = null;
 let summaryCache   = null;
 
-// ── Scanner ───────────────────────────────────────────────────
-function toggleScanner() {
-  scanning ? stopScanner() : startScanner();
-}
+// ── Image capture & barcode extraction ────────────────────────
+async function handleImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
 
-function startScanner() {
-  document.getElementById('scanBtn').textContent = 'Stop Scanner';
-  document.getElementById('scanBtn').className = 'scan-btn stop';
-  document.getElementById('scannerPlaceholder').style.display = 'none';
-  document.getElementById('scannerOverlay').style.display = 'flex';
-  scanning = true;
+  // Reset input so same barcode can be scanned again
+  event.target.value = '';
 
-  Quagga.init({
-    inputStream: {
-      name: "Live", type: "LiveStream",
-      target: document.getElementById('interactive'),
-      constraints: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
-    },
-    decoder: { readers: ["ean_reader","ean_8_reader","upc_reader","upc_e_reader"] },
-    locate: true
-  }, function(err) {
-    if (err) { showToast('Camera error: ' + err.message); stopScanner(); return; }
-    Quagga.start();
-  });
+  document.getElementById('processing').classList.add('show');
 
-  Quagga.onDetected(function(result) {
-    if (scanCooldown) return;
-    const code = result.codeResult.code;
-    if (!code) return;
-    scanCooldown = true;
-    setTimeout(() => { scanCooldown = false; }, 3000);
-    stopScanner();
-    lookupBarcode(code);
-  });
-}
+  // Use BarcodeDetector API (supported in iOS 17+ Safari)
+  if ('BarcodeDetector' in window) {
+    try {
+      const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] });
+      const bitmap   = await createImageBitmap(file);
+      const codes    = await detector.detect(bitmap);
 
-function stopScanner() {
-  if (!scanning) return;
-  try { Quagga.stop(); } catch(e) {}
-  scanning = false;
-  document.getElementById('scanBtn').textContent = 'Start Scanner';
-  document.getElementById('scanBtn').className = 'scan-btn start';
-  document.getElementById('scannerOverlay').style.display = 'none';
-  document.getElementById('scannerPlaceholder').style.display = 'block';
-  document.getElementById('scannerPlaceholder').textContent = 'Scanner stopped';
+      document.getElementById('processing').classList.remove('show');
+
+      if (codes.length > 0) {
+        processBarcode(codes[0].rawValue);
+      } else {
+        showToast('No barcode found — try again or enter manually');
+      }
+      return;
+    } catch(e) {
+      // Fall through to manual entry
+    }
+  }
+
+  // BarcodeDetector not available — ask user to enter manually
+  document.getElementById('processing').classList.remove('show');
+  showToast('Automatic reading not supported — please enter the number manually');
 }
 
 // ── Main lookup flow ──────────────────────────────────────────
-async function lookupBarcode(barcode) {
+async function processBarcode(barcode) {
   barcode = String(barcode).trim();
-  if (!barcode) { showToast('Enter a barcode first'); return; }
+  if (!barcode) { showToast('Enter a barcode number first'); return; }
   currentBarcode = barcode;
 
-  showToast('Looking up...');
-
-  // Show product card immediately
+  // Show product card in loading state
   document.getElementById('barcodeDisplay').textContent = barcode;
   document.getElementById('productName').textContent = '...';
   document.getElementById('productNameEdit').value = '';
@@ -255,89 +272,84 @@ async function lookupBarcode(barcode) {
   document.getElementById('historyLoading').classList.add('show');
   document.getElementById('historyContent').innerHTML = '';
   document.getElementById('cardOffer').style.display = 'none';
+  document.getElementById('logConfirm').classList.remove('show');
+  document.querySelector('.action-row').style.display = 'flex';
+  document.getElementById('comparison').classList.remove('show');
   document.getElementById('resetBtn').style.display = 'block';
   document.getElementById('cardProduct').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  // Step 1: fetch summary data (needed for both history and barcode-log lookup)
+  // Prefetch summary data in parallel with barcode lookup
   if (!summaryCache) {
     summaryCache = await callAppsScript('getSummaryData', {});
   }
 
-  // Step 2: check own Log by barcode first
-  const logMatch = await checkLogByBarcode(barcode);
+  // 1. Check own Log by barcode
+  const logMatch = await callAppsScript('getLogEntryByBarcode', { barcode });
 
-  if (logMatch) {
-    // Found in own log - use product name from log
+  if (logMatch && logMatch.product) {
     setProductDisplay(logMatch.product, barcode, 'log', 'Found in your Log');
     document.getElementById('productNameEdit').value = logMatch.product;
     showHistory(logMatch.product);
+    document.getElementById('cardOffer').style.display = 'block';
+    return;
+  }
+
+  // 2. Open Beauty Facts
+  let dbResult = await tryOpenBeautyFacts(barcode);
+
+  // 3. Open Food Facts fallback
+  if (!dbResult) dbResult = await tryOpenFoodFacts(barcode);
+
+  if (dbResult) {
+    setProductDisplay(dbResult.name, barcode, 'db', 'Found in database');
+    document.getElementById('productNameEdit').value = dbResult.name;
+    if (dbResult.packSize) document.getElementById('offerPack').value = dbResult.packSize;
+    if (dbResult.unit)     document.getElementById('offerUnit').value = dbResult.unit;
+    showHistory(dbResult.name);
   } else {
-    // Step 3: try Open Beauty Facts
-    let dbResult = await tryOpenBeautyFacts(barcode);
-
-    // Step 4: fallback to Open Food Facts
-    if (!dbResult) {
-      dbResult = await tryOpenFoodFacts(barcode);
-    }
-
-    if (dbResult) {
-      setProductDisplay(dbResult.name, barcode, 'db', 'Found in database');
-      document.getElementById('productNameEdit').value = dbResult.name;
-      if (dbResult.packSize) document.getElementById('offerPack').value = dbResult.packSize;
-      if (dbResult.unit)     document.getElementById('offerUnit').value = dbResult.unit;
-      showHistory(dbResult.name);
-    } else {
-      // Step 5: not found anywhere - prompt manual entry
-      setProductDisplay('Not found — please enter name below', barcode, 'manual', 'Enter manually');
-      document.getElementById('productNameEdit').value = '';
-      document.getElementById('historyLoading').classList.remove('show');
-      document.getElementById('historyContent').innerHTML = '<div class="no-history">No history yet — this looks like a new product.</div>';
-    }
+    // 4. Not found anywhere
+    setProductDisplay('Not found — please enter name below', barcode, 'manual', 'Enter manually');
+    document.getElementById('productNameEdit').value = '';
+    document.getElementById('historyLoading').classList.remove('show');
+    document.getElementById('historyContent').innerHTML = '<div class="no-history">No history yet — this looks like a new product.</div>';
   }
 
   document.getElementById('cardOffer').style.display = 'block';
 }
 
-// ── Check own Log by barcode (column M = index 12) ────────────
-async function checkLogByBarcode(barcode) {
-  const result = await callAppsScript('getLogEntryByBarcode', { barcode });
-  return result; // returns { product, bestUnit, avgUnit, lastUnit, lastEff, purchases, lastRetailer, lastDate } or null
-}
-
-// ── Open Beauty Facts ─────────────────────────────────────────
+// ── Database lookups ──────────────────────────────────────────
 async function tryOpenBeautyFacts(barcode) {
   try {
     const r = await fetch(`https://world.openbeautyfacts.org/api/v0/product/${barcode}.json`);
     const d = await r.json();
     if (d.status === 1 && d.product && d.product.product_name) {
-      const name = d.product.product_name || d.product.product_name_en || '';
-      const q = d.product.quantity || '';
-      const m = q.match(/([\d.]+)\s*(ml|g|oz|l|kg)/i);
-      return { name, packSize: m ? m[1] : null, unit: m ? m[2].toLowerCase() : null };
+      return parseDbProduct(d.product);
     }
   } catch(e) {}
   return null;
 }
 
-// ── Open Food Facts ───────────────────────────────────────────
 async function tryOpenFoodFacts(barcode) {
   try {
     const r = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
     const d = await r.json();
     if (d.status === 1 && d.product && d.product.product_name) {
-      const name = d.product.product_name || d.product.product_name_en || '';
-      const q = d.product.quantity || '';
-      const m = q.match(/([\d.]+)\s*(ml|g|oz|l|kg)/i);
-      return { name, packSize: m ? m[1] : null, unit: m ? m[2].toLowerCase() : null };
+      return parseDbProduct(d.product);
     }
   } catch(e) {}
   return null;
 }
 
-// ── Show history from Summary cache ──────────────────────────
+function parseDbProduct(product) {
+  const name = product.product_name || product.product_name_en || '';
+  const q    = product.quantity || '';
+  const m    = q.match(/([\d.]+)\s*(ml|g|oz|l|kg)/i);
+  return { name, packSize: m ? m[1] : null, unit: m ? m[2].toLowerCase() : null };
+}
+
+// ── History display ───────────────────────────────────────────
 function showHistory(productName) {
   document.getElementById('historyLoading').classList.remove('show');
-
   if (!summaryCache || !Array.isArray(summaryCache)) {
     document.getElementById('historyContent').innerHTML = '<div class="no-history">Could not load history.</div>';
     currentProduct = null;
@@ -346,8 +358,6 @@ function showHistory(productName) {
 
   const nameLower = (productName || '').toLowerCase().trim();
   let match = summaryCache.find(p => p.product.toLowerCase() === nameLower);
-
-  // Fuzzy fallback - first 20 chars
   if (!match && nameLower.length > 8) {
     match = summaryCache.find(p =>
       p.product.toLowerCase().includes(nameLower.substring(0, 20)) ||
@@ -367,8 +377,7 @@ function showHistory(productName) {
         <div class="stat"><div class="lbl">Last eff. price</div><div class="val">${fmtP(match.lastEff)}</div></div>
         <div class="stat"><div class="lbl">Purchases</div><div class="val">${match.purchases || '0'}</div></div>
       </div>
-      <div style="font-size:12px;color:var(--mid);margin-top:6px;">Last from ${esc(match.lastRetailer)} on ${match.lastDate}</div>
-    `;
+      <div style="font-size:12px;color:var(--mid);margin-top:6px;">Last from ${esc(match.lastRetailer)} on ${match.lastDate}</div>`;
   } else {
     document.getElementById('historyContent').innerHTML = '<div class="no-history">No history found — this may be a new product.</div>';
   }
@@ -381,30 +390,24 @@ function calcComparison() {
   if (!pack || !price) { document.getElementById('comparison').classList.remove('show'); return; }
 
   const effUnit = price / pack;
-  const verdict = document.getElementById('verdict');
-  const rows    = document.getElementById('compRows');
   let lines = [];
-
   lines.push(`<div class="comp-row"><span class="lbl">Effective £/unit</span><span class="val">£${effUnit.toFixed(3)}</span></div>`);
 
+  const verdict = document.getElementById('verdict');
   if (currentProduct) {
     const best = parseFloat(currentProduct.bestUnit);
     const avg  = parseFloat(currentProduct.avgUnit);
     const last = parseFloat(currentProduct.lastUnit);
     if (best) lines.push(`<div class="comp-row"><span class="lbl">vs best (£${best.toFixed(3)})</span><span class="val">${pct(effUnit,best)}</span></div>`);
     if (avg)  lines.push(`<div class="comp-row"><span class="lbl">vs average (£${avg.toFixed(3)})</span><span class="val">${pct(effUnit,avg)}</span></div>`);
-    if (best && effUnit <= best) {
-      verdict.textContent = '✓ Beats your best price ever'; verdict.className = 'verdict great';
-    } else if (last && effUnit <= last) {
-      verdict.textContent = 'On par with your last purchase'; verdict.className = 'verdict ok';
-    } else {
-      verdict.textContent = 'Above your last price'; verdict.className = 'verdict poor';
-    }
+    if (best && effUnit <= best)        { verdict.textContent = '✓ Beats your best price ever'; verdict.className = 'verdict great'; }
+    else if (last && effUnit <= last)   { verdict.textContent = 'On par with your last purchase'; verdict.className = 'verdict ok'; }
+    else                                { verdict.textContent = 'Above your last price'; verdict.className = 'verdict poor'; }
   } else {
     verdict.textContent = 'New product — no history to compare'; verdict.className = 'verdict new';
   }
 
-  rows.innerHTML = lines.join('');
+  document.getElementById('compRows').innerHTML = lines.join('');
   document.getElementById('comparison').classList.add('show');
 }
 
@@ -419,26 +422,20 @@ async function logPurchase() {
   if (!product) { showToast('Please enter a product name'); return; }
   if (!price)   { showToast('Please enter a price'); return; }
 
-  const buyBtn = document.querySelector('.action-btn.buy');
-  buyBtn.disabled = true;
-  buyBtn.textContent = 'Saving...';
+  const btn = document.getElementById('buyBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
 
   let success = 0, failed = 0;
-
   for (let i = 0; i < qty; i++) {
     const result = await callAppsScript('logPurchase', {
       product, retailer: '', packSize: pack, unit, price,
       loyalty: '', notes: '', isOffer: false, barcode: currentBarcode
     });
-    if (result && result.success) success++;
-    else failed++;
+    if (result && result.success) success++; else failed++;
   }
 
-  // Bust summary cache so next scan gets fresh data
   summaryCache = null;
-
-  buyBtn.disabled = false;
-  buyBtn.textContent = 'Buy — Log it';
+  btn.disabled = false; btn.textContent = 'Buy — Log it';
 
   if (success > 0) {
     document.getElementById('logConfirmMsg').textContent = `✓ ${success} row${success > 1 ? 's' : ''} logged`;
@@ -450,24 +447,22 @@ async function logPurchase() {
   }
 }
 
-// ── Helpers ───────────────────────────────────────────────────
+// ── Utilities ─────────────────────────────────────────────────
+function callAppsScript(fn, params) {
+  return new Promise(resolve => {
+    const url = APPS_SCRIPT_URL + '?fn=' + encodeURIComponent(fn) +
+                '&params=' + encodeURIComponent(JSON.stringify(params));
+    fetch(url, { redirect: 'follow' })
+      .then(r => r.json()).then(resolve).catch(() => resolve(null));
+  });
+}
+
 function setProductDisplay(name, barcode, sourceType, sourceLabel) {
   document.getElementById('productName').textContent = name;
   document.getElementById('barcodeDisplay').textContent = barcode;
   const badge = document.getElementById('sourceBadge');
   badge.textContent = sourceLabel;
   badge.className = 'source-badge source-' + sourceType;
-}
-
-function callAppsScript(fn, params) {
-  return new Promise((resolve) => {
-    const url = APPS_SCRIPT_URL + '?fn=' + encodeURIComponent(fn) +
-                '&params=' + encodeURIComponent(JSON.stringify(params));
-    fetch(url, { redirect: 'follow' })
-      .then(r => r.json())
-      .then(resolve)
-      .catch(() => resolve(null));
-  });
 }
 
 function pct(val, ref) {
@@ -483,7 +478,7 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  setTimeout(() => t.classList.remove('show'), 2800);
 }
 
 function resetAll() {
@@ -499,7 +494,7 @@ function resetAll() {
   document.getElementById('offerPrice').value = '';
   document.getElementById('offerQty').value = '1';
   document.getElementById('manualBarcode').value = '';
-  document.getElementById('scannerPlaceholder').textContent = 'Tap below to start camera';
+  document.getElementById('processing').classList.remove('show');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
