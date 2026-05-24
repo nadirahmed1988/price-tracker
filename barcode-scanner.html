@@ -107,7 +107,7 @@
       <div class="scan-area">
         <span class="scan-icon">📷</span>
         <p class="scan-label">
-          <strong>Take a Xphoto of the barcode</strong>
+          <strong>Take a photo of the barcode</strong>
           Get close, keep steady, and make sure the barcode fills most of the frame.
         </p>
       </div>
@@ -363,14 +363,28 @@ function decodeWithZXing(file) {
     img.onload = () => {
       URL.revokeObjectURL(url);
       try {
-        // Try multiple scales
-        const scales = [1, 1.5, 0.75, 0.5];
-        for (const scale of scales) {
-          const canvas  = document.createElement('canvas');
-          canvas.width  = Math.round(img.width * scale);
-          canvas.height = Math.round(img.height * scale);
+        const iw = img.width, ih = img.height;
+
+        // Build a set of crop regions to try:
+        // 1. Centre third (horizontal strip where barcode most likely is)
+        // 2. Full image at reduced scale
+        // 3. Centre half
+        const regions = [
+          // sx, sy, sw, sh, destW
+          { sx: Math.floor(iw*0.1), sy: Math.floor(ih*0.3), sw: Math.floor(iw*0.8), sh: Math.floor(ih*0.4), destW: 1200 },
+          { sx: Math.floor(iw*0.1), sy: Math.floor(ih*0.2), sw: Math.floor(iw*0.8), sh: Math.floor(ih*0.6), destW: 1200 },
+          { sx: 0,                  sy: Math.floor(ih*0.3), sw: iw,                  sh: Math.floor(ih*0.4), destW: 1200 },
+          { sx: 0,                  sy: 0,                  sw: iw,                  sh: ih,                 destW: 800  },
+          { sx: Math.floor(iw*0.2), sy: Math.floor(ih*0.35),sw: Math.floor(iw*0.6), sh: Math.floor(ih*0.3), destW: 1200 },
+        ];
+
+        for (const r of regions) {
+          const scale  = r.destW / r.sw;
+          const canvas = document.createElement('canvas');
+          canvas.width  = r.destW;
+          canvas.height = Math.round(r.sh * scale);
           const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, r.sx, r.sy, r.sw, r.sh, 0, 0, canvas.width, canvas.height);
           const result = EAN_DECODER.decode(canvas);
           if (result) { resolve(result); return; }
         }
