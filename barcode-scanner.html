@@ -29,62 +29,44 @@
   .body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 16px calc(var(--safe-bottom) + 24px); }
   .card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
   .card-title { font-size: 11px; font-weight: 600; color: var(--mid); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 12px; }
-
-  /* Scan area */
   .scan-area { text-align: center; padding: 8px 0 4px; }
-  .scan-icon { font-size: 56px; margin-bottom: 12px; display: block; }
-  .scan-label { font-size: 14px; color: var(--mid); margin-bottom: 16px; line-height: 1.4; }
+  .scan-icon { font-size: 52px; margin-bottom: 12px; display: block; }
+  .scan-label { font-size: 14px; color: var(--mid); margin-bottom: 16px; line-height: 1.5; }
   .scan-label strong { color: var(--text); display: block; font-size: 16px; margin-bottom: 4px; }
-
-  /* Hidden file input */
   #barcodeInput { display: none; }
-
-  /* Big scan button */
-  .scan-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; background: var(--teal); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 17px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: opacity 0.12s, transform 0.1s; margin-bottom: 10px; }
+  .scan-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; background: var(--teal); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 17px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: opacity 0.12s, transform 0.1s; margin-bottom: 10px; }
   .scan-btn:active { opacity: 0.85; transform: scale(0.98); }
-  .scan-btn-icon { font-size: 20px; }
-
   .divider-text { text-align: center; font-size: 12px; color: var(--mid); margin: 8px 0; position: relative; }
   .divider-text::before, .divider-text::after { content: ''; position: absolute; top: 50%; width: 42%; height: 1px; background: var(--border); }
-  .divider-text::before { left: 0; }
-  .divider-text::after { right: 0; }
-
+  .divider-text::before { left: 0; } .divider-text::after { right: 0; }
   .barcode-manual { display: flex; gap: 8px; }
   .barcode-manual input { flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 15px; font-family: 'DM Sans', sans-serif; background: var(--warm-grey); outline: none; }
   .barcode-manual input:focus { border-color: var(--teal); background: #fff; }
   .barcode-manual button { padding: 10px 16px; background: var(--navy); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; }
-
-  /* Processing state */
-  .processing { display: none; align-items: center; justify-content: center; gap: 10px; padding: 16px; font-size: 14px; color: var(--mid); }
+  .processing { display: none; align-items: center; justify-content: center; gap: 10px; padding: 14px; font-size: 14px; color: var(--mid); }
   .processing.show { display: flex; }
   .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--teal); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Product info */
+  .retry-tip { font-size: 12px; color: var(--mid); text-align: center; margin-top: 8px; display: none; line-height: 1.5; background: var(--warm-grey); border-radius: var(--radius-sm); padding: 10px 12px; }
+  .retry-tip.show { display: block; }
   .product-found { background: var(--teal-light); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 12px; }
   .product-found .name { font-size: 15px; font-weight: 600; color: var(--navy); line-height: 1.3; }
   .product-found .barcode-num { font-size: 12px; color: var(--teal); margin-top: 2px; font-family: monospace; }
   .source-badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 99px; margin-top: 5px; }
-  .source-db     { background: #e8eaf6; color: #3949ab; }
-  .source-log    { background: var(--green-bg); color: var(--green-fg); }
+  .source-db  { background: #e8eaf6; color: #3949ab; }
+  .source-log { background: var(--green-bg); color: var(--green-fg); }
   .source-manual { background: var(--amber-bg); color: var(--amber-fg); }
-
-  /* History */
   .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
   .stat { background: var(--warm-grey); border-radius: var(--radius-sm); padding: 10px 12px; }
   .stat .lbl { font-size: 11px; color: var(--mid); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
   .stat .val { font-size: 18px; font-weight: 700; color: var(--text); margin-top: 2px; }
   .stat .val.best { color: var(--teal); }
   .no-history { font-size: 13px; color: var(--mid); font-style: italic; }
-
-  /* Fields */
   .field { margin-bottom: 12px; }
   .field label { display: block; font-size: 12px; font-weight: 500; color: var(--mid); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
   .field input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 15px; font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--warm-grey); outline: none; }
   .field input:focus { border-color: var(--teal); background: #fff; }
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-  /* Comparison */
   .comparison { display: none; margin-top: 12px; }
   .comparison.show { display: block; }
   .verdict { padding: 11px 14px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 700; text-align: center; margin-bottom: 10px; }
@@ -94,27 +76,20 @@
   .verdict.new   { background: #e8eaf6; color: #3949ab; }
   .comp-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
   .comp-row:last-child { border-bottom: none; }
-  .comp-row .lbl { color: var(--mid); }
-  .comp-row .val { font-weight: 500; }
-
-  /* Actions */
+  .comp-row .lbl { color: var(--mid); } .comp-row .val { font-weight: 500; }
   .action-row { display: flex; gap: 8px; margin-top: 14px; }
   .action-btn { flex: 1; padding: 13px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; font-family: 'DM Sans', sans-serif; border: none; cursor: pointer; transition: opacity 0.12s, transform 0.1s; }
   .action-btn:active { opacity: 0.85; transform: scale(0.98); }
   .action-btn.buy  { background: var(--navy); color: #fff; }
   .action-btn.skip { background: var(--warm-grey); color: var(--text); }
   .action-btn:disabled { opacity: 0.5; }
-
   .log-confirm { display: none; background: var(--green-bg); border-radius: var(--radius-sm); padding: 14px; text-align: center; margin-top: 12px; }
   .log-confirm.show { display: block; }
   .log-confirm p { font-size: 14px; color: var(--green-fg); font-weight: 500; }
   .log-confirm .sub { font-size: 12px; color: var(--green-fg); opacity: 0.8; margin-top: 4px; }
-
   .reset-btn { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; color: var(--mid); font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 4px; }
   .reset-btn:active { background: var(--warm-grey); }
-
   .divider { border: none; border-top: 1px solid var(--border); margin: 4px 0 12px; }
-
   .toast { position: fixed; bottom: calc(var(--safe-bottom) + 24px); left: 50%; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 11px 22px; border-radius: 30px; font-size: 14px; font-weight: 500; opacity: 0; transition: opacity 0.25s; pointer-events: none; white-space: nowrap; z-index: 999; max-width: 90%; text-align: center; }
   .toast.show { opacity: 1; }
 </style>
@@ -127,37 +102,30 @@
   </div>
   <div class="body">
 
-    <!-- Step 1: Scan -->
     <div class="card" id="cardScan">
       <div class="card-title">Scan barcode</div>
       <div class="scan-area">
         <span class="scan-icon">📷</span>
         <p class="scan-label">
-          <strong>Point your camera at a barcode</strong>
-          Tap the button below — iOS will open your camera. Take the photo and it'll read the barcode automatically.
+          <strong>Take a photo of the barcode</strong>
+          Get close, keep steady, and make sure the barcode fills most of the frame.
         </p>
       </div>
-
-      <!-- Hidden file input — capture=environment opens rear camera -->
       <input type="file" id="barcodeInput" accept="image/*" capture="environment" onchange="handleImage(event)" />
-
       <button class="scan-btn" onclick="document.getElementById('barcodeInput').click()">
-        <span class="scan-btn-icon">⬛</span> Scan Barcode
+        ⬛ Scan Barcode
       </button>
-
-      <div class="divider-text">or</div>
-
+      <div class="retry-tip" id="retryTip">
+        Couldn't read the barcode. Try again with the barcode filling more of the frame, in good light, held flat. Or enter the number below.
+      </div>
+      <div class="divider-text">or enter manually</div>
       <div class="barcode-manual">
-        <input type="number" id="manualBarcode" placeholder="Enter barcode number..." />
+        <input type="number" id="manualBarcode" placeholder="Barcode number..." />
         <button onclick="processBarcode(document.getElementById('manualBarcode').value)">Look up</button>
       </div>
-
-      <div class="processing" id="processing">
-        <span class="spinner"></span> Reading barcode...
-      </div>
+      <div class="processing" id="processing"><span class="spinner"></span> Reading barcode...</div>
     </div>
 
-    <!-- Step 2: Product + history -->
     <div class="card" id="cardProduct" style="display:none;">
       <div class="card-title">Product</div>
       <div class="product-found">
@@ -175,24 +143,15 @@
       <div id="historyContent"></div>
     </div>
 
-    <!-- Step 3: Offer -->
     <div class="card" id="cardOffer" style="display:none;">
       <div class="card-title">This offer</div>
       <div class="field-row">
-        <div class="field"><label>Pack size</label>
-          <input type="number" id="offerPack" placeholder="e.g. 485" oninput="calcComparison()" />
-        </div>
-        <div class="field"><label>Unit</label>
-          <input type="text" id="offerUnit" placeholder="e.g. g" />
-        </div>
+        <div class="field"><label>Pack size</label><input type="number" id="offerPack" placeholder="e.g. 485" oninput="calcComparison()" /></div>
+        <div class="field"><label>Unit</label><input type="text" id="offerUnit" placeholder="e.g. g" /></div>
       </div>
       <div class="field-row">
-        <div class="field"><label>Price (£)</label>
-          <input type="number" step="0.01" id="offerPrice" placeholder="0.00" oninput="calcComparison()" />
-        </div>
-        <div class="field"><label>Qty to buy</label>
-          <input type="number" id="offerQty" value="1" min="1" />
-        </div>
+        <div class="field"><label>Price (£)</label><input type="number" step="0.01" id="offerPrice" placeholder="0.00" oninput="calcComparison()" /></div>
+        <div class="field"><label>Qty to buy</label><input type="number" id="offerQty" value="1" min="1" /></div>
       </div>
       <div class="comparison" id="comparison">
         <div class="verdict" id="verdict"></div>
@@ -209,51 +168,116 @@
     </div>
 
     <button class="reset-btn" id="resetBtn" style="display:none;" onclick="resetAll()">← Scan another product</button>
-
   </div>
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- ZXing for still image decoding -->
+<script src="https://unpkg.com/@zxing/library@0.12.3"></script>
 <script>
 const APPS_SCRIPT_URL = "https://script.google.com/a/macros/nadirahmed.com/s/AKfycbw89SQyd1n67KrWkBwpvbaHsSmCUOqQ7BdqvBY_T6MnWupoEz-ImICiKLqD6dkRpESufg/exec";
 
 let currentBarcode = null;
 let currentProduct = null;
 let summaryCache   = null;
+let zxingReader    = null;
 
-// ── Image capture & barcode extraction ────────────────────────
+// Initialise ZXing reader
+window.addEventListener('load', () => {
+  try {
+    const hints = new Map();
+    const formats = [
+      ZXing.BarcodeFormat.EAN_13,
+      ZXing.BarcodeFormat.EAN_8,
+      ZXing.BarcodeFormat.UPC_A,
+      ZXing.BarcodeFormat.UPC_E
+    ];
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    zxingReader = new ZXing.MultiFormatReader();
+    zxingReader.setHints(hints);
+  } catch(e) {
+    console.warn('ZXing init failed:', e);
+  }
+});
+
+// ── Image handler ─────────────────────────────────────────────
 async function handleImage(event) {
   const file = event.target.files[0];
   if (!file) return;
-
-  // Reset input so same barcode can be scanned again
   event.target.value = '';
 
   document.getElementById('processing').classList.add('show');
+  document.getElementById('retryTip').classList.remove('show');
 
-  // Use BarcodeDetector API (supported in iOS 17+ Safari)
+  // Try BarcodeDetector first (native, most accurate)
   if ('BarcodeDetector' in window) {
     try {
-      const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] });
-      const bitmap   = await createImageBitmap(file);
-      const codes    = await detector.detect(bitmap);
-
+      const detector = new BarcodeDetector({
+        formats: ['ean_13','ean_8','upc_a','upc_e','code_128','code_39']
+      });
+      const bitmap = await createImageBitmap(file);
+      const codes  = await detector.detect(bitmap);
       document.getElementById('processing').classList.remove('show');
-
-      if (codes.length > 0) {
-        processBarcode(codes[0].rawValue);
-      } else {
-        showToast('No barcode found — try again or enter manually');
-      }
-      return;
-    } catch(e) {
-      // Fall through to manual entry
-    }
+      if (codes.length > 0) { processBarcode(codes[0].rawValue); return; }
+    } catch(e) {}
   }
 
-  // BarcodeDetector not available — ask user to enter manually
+  // ZXing fallback
+  if (zxingReader) {
+    try {
+      const barcode = await decodeWithZXing(file);
+      document.getElementById('processing').classList.remove('show');
+      if (barcode) { processBarcode(barcode); return; }
+    } catch(e) {}
+  }
+
   document.getElementById('processing').classList.remove('show');
-  showToast('Automatic reading not supported — please enter the number manually');
+  document.getElementById('retryTip').classList.add('show');
+}
+
+// ── ZXing decoder ─────────────────────────────────────────────
+function decodeWithZXing(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      try {
+        // Try at multiple scales for better accuracy
+        const scales = [1, 0.75, 0.5];
+        for (const scale of scales) {
+          const canvas  = document.createElement('canvas');
+          canvas.width  = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const luminance = new ZXing.RGBLuminanceSource(
+            imageData.data, canvas.width, canvas.height
+          );
+          const binarized = new ZXing.HybridBinarizer(luminance);
+          const bitmap    = new ZXing.BinaryBitmap(binarized);
+          try {
+            const result = zxingReader.decode(bitmap);
+            if (result && result.getText()) {
+              resolve(result.getText());
+              return;
+            }
+          } catch(e) {
+            // Try next scale
+          }
+        }
+        resolve(null);
+      } catch(e) {
+        reject(e);
+      }
+    };
+
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image load failed')); };
+    img.src = url;
+  });
 }
 
 // ── Main lookup flow ──────────────────────────────────────────
@@ -262,7 +286,6 @@ async function processBarcode(barcode) {
   if (!barcode) { showToast('Enter a barcode number first'); return; }
   currentBarcode = barcode;
 
-  // Show product card in loading state
   document.getElementById('barcodeDisplay').textContent = barcode;
   document.getElementById('productName').textContent = '...';
   document.getElementById('productNameEdit').value = '';
@@ -276,16 +299,13 @@ async function processBarcode(barcode) {
   document.querySelector('.action-row').style.display = 'flex';
   document.getElementById('comparison').classList.remove('show');
   document.getElementById('resetBtn').style.display = 'block';
+  document.getElementById('retryTip').classList.remove('show');
   document.getElementById('cardProduct').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  // Prefetch summary data in parallel with barcode lookup
-  if (!summaryCache) {
-    summaryCache = await callAppsScript('getSummaryData', {});
-  }
+  if (!summaryCache) summaryCache = await callAppsScript('getSummaryData', {});
 
-  // 1. Check own Log by barcode
+  // 1. Own Log
   const logMatch = await callAppsScript('getLogEntryByBarcode', { barcode });
-
   if (logMatch && logMatch.product) {
     setProductDisplay(logMatch.product, barcode, 'log', 'Found in your Log');
     document.getElementById('productNameEdit').value = logMatch.product;
@@ -296,8 +316,6 @@ async function processBarcode(barcode) {
 
   // 2. Open Beauty Facts
   let dbResult = await tryOpenBeautyFacts(barcode);
-
-  // 3. Open Food Facts fallback
   if (!dbResult) dbResult = await tryOpenFoodFacts(barcode);
 
   if (dbResult) {
@@ -307,7 +325,6 @@ async function processBarcode(barcode) {
     if (dbResult.unit)     document.getElementById('offerUnit').value = dbResult.unit;
     showHistory(dbResult.name);
   } else {
-    // 4. Not found anywhere
     setProductDisplay('Not found — please enter name below', barcode, 'manual', 'Enter manually');
     document.getElementById('productNameEdit').value = '';
     document.getElementById('historyLoading').classList.remove('show');
@@ -322,9 +339,7 @@ async function tryOpenBeautyFacts(barcode) {
   try {
     const r = await fetch(`https://world.openbeautyfacts.org/api/v0/product/${barcode}.json`);
     const d = await r.json();
-    if (d.status === 1 && d.product && d.product.product_name) {
-      return parseDbProduct(d.product);
-    }
+    if (d.status === 1 && d.product && d.product.product_name) return parseDbProduct(d.product);
   } catch(e) {}
   return null;
 }
@@ -333,9 +348,7 @@ async function tryOpenFoodFacts(barcode) {
   try {
     const r = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
     const d = await r.json();
-    if (d.status === 1 && d.product && d.product.product_name) {
-      return parseDbProduct(d.product);
-    }
+    if (d.status === 1 && d.product && d.product.product_name) return parseDbProduct(d.product);
   } catch(e) {}
   return null;
 }
@@ -347,26 +360,22 @@ function parseDbProduct(product) {
   return { name, packSize: m ? m[1] : null, unit: m ? m[2].toLowerCase() : null };
 }
 
-// ── History display ───────────────────────────────────────────
+// ── History ───────────────────────────────────────────────────
 function showHistory(productName) {
   document.getElementById('historyLoading').classList.remove('show');
   if (!summaryCache || !Array.isArray(summaryCache)) {
     document.getElementById('historyContent').innerHTML = '<div class="no-history">Could not load history.</div>';
-    currentProduct = null;
-    return;
+    currentProduct = null; return;
   }
-
   const nameLower = (productName || '').toLowerCase().trim();
   let match = summaryCache.find(p => p.product.toLowerCase() === nameLower);
   if (!match && nameLower.length > 8) {
     match = summaryCache.find(p =>
-      p.product.toLowerCase().includes(nameLower.substring(0, 20)) ||
-      nameLower.includes(p.product.toLowerCase().replace(/\s*\(.*?\)/g,'').trim().substring(0, 20))
+      p.product.toLowerCase().includes(nameLower.substring(0,20)) ||
+      nameLower.includes(p.product.toLowerCase().replace(/\s*\(.*?\)/g,'').trim().substring(0,20))
     );
   }
-
   currentProduct = match || null;
-
   if (match) {
     const fmt  = v => v ? '£' + Number(v).toFixed(3) : '—';
     const fmtP = v => v ? '£' + Number(v).toFixed(2) : '—';
@@ -375,7 +384,7 @@ function showHistory(productName) {
         <div class="stat"><div class="lbl">Best £/unit</div><div class="val best">${fmt(match.bestUnit)}</div></div>
         <div class="stat"><div class="lbl">Avg £/unit</div><div class="val">${fmt(match.avgUnit)}</div></div>
         <div class="stat"><div class="lbl">Last eff. price</div><div class="val">${fmtP(match.lastEff)}</div></div>
-        <div class="stat"><div class="lbl">Purchases</div><div class="val">${match.purchases || '0'}</div></div>
+        <div class="stat"><div class="lbl">Purchases</div><div class="val">${match.purchases||'0'}</div></div>
       </div>
       <div style="font-size:12px;color:var(--mid);margin-top:6px;">Last from ${esc(match.lastRetailer)} on ${match.lastDate}</div>`;
   } else {
@@ -388,11 +397,8 @@ function calcComparison() {
   const pack  = parseFloat(document.getElementById('offerPack').value);
   const price = parseFloat(document.getElementById('offerPrice').value);
   if (!pack || !price) { document.getElementById('comparison').classList.remove('show'); return; }
-
   const effUnit = price / pack;
-  let lines = [];
-  lines.push(`<div class="comp-row"><span class="lbl">Effective £/unit</span><span class="val">£${effUnit.toFixed(3)}</span></div>`);
-
+  let lines = [`<div class="comp-row"><span class="lbl">Effective £/unit</span><span class="val">£${effUnit.toFixed(3)}</span></div>`];
   const verdict = document.getElementById('verdict');
   if (currentProduct) {
     const best = parseFloat(currentProduct.bestUnit);
@@ -400,13 +406,12 @@ function calcComparison() {
     const last = parseFloat(currentProduct.lastUnit);
     if (best) lines.push(`<div class="comp-row"><span class="lbl">vs best (£${best.toFixed(3)})</span><span class="val">${pct(effUnit,best)}</span></div>`);
     if (avg)  lines.push(`<div class="comp-row"><span class="lbl">vs average (£${avg.toFixed(3)})</span><span class="val">${pct(effUnit,avg)}</span></div>`);
-    if (best && effUnit <= best)        { verdict.textContent = '✓ Beats your best price ever'; verdict.className = 'verdict great'; }
-    else if (last && effUnit <= last)   { verdict.textContent = 'On par with your last purchase'; verdict.className = 'verdict ok'; }
-    else                                { verdict.textContent = 'Above your last price'; verdict.className = 'verdict poor'; }
+    if (best && effUnit <= best)      { verdict.textContent = '✓ Beats your best price ever'; verdict.className = 'verdict great'; }
+    else if (last && effUnit <= last) { verdict.textContent = 'On par with your last purchase'; verdict.className = 'verdict ok'; }
+    else                              { verdict.textContent = 'Above your last price'; verdict.className = 'verdict poor'; }
   } else {
     verdict.textContent = 'New product — no history to compare'; verdict.className = 'verdict new';
   }
-
   document.getElementById('compRows').innerHTML = lines.join('');
   document.getElementById('comparison').classList.add('show');
 }
@@ -418,13 +423,10 @@ async function logPurchase() {
   const unit    = document.getElementById('offerUnit').value.trim();
   const price   = document.getElementById('offerPrice').value;
   const qty     = parseInt(document.getElementById('offerQty').value) || 1;
-
   if (!product) { showToast('Please enter a product name'); return; }
   if (!price)   { showToast('Please enter a price'); return; }
-
   const btn = document.getElementById('buyBtn');
   btn.disabled = true; btn.textContent = 'Saving...';
-
   let success = 0, failed = 0;
   for (let i = 0; i < qty; i++) {
     const result = await callAppsScript('logPurchase', {
@@ -433,13 +435,11 @@ async function logPurchase() {
     });
     if (result && result.success) success++; else failed++;
   }
-
   summaryCache = null;
   btn.disabled = false; btn.textContent = 'Buy — Log it';
-
   if (success > 0) {
-    document.getElementById('logConfirmMsg').textContent = `✓ ${success} row${success > 1 ? 's' : ''} logged`;
-    document.getElementById('logConfirmSub').textContent = `Add retailer, loyalty value and notes in your Sheet later.${failed > 0 ? ' (' + failed + ' failed)' : ''}`;
+    document.getElementById('logConfirmMsg').textContent = `✓ ${success} row${success>1?'s':''} logged`;
+    document.getElementById('logConfirmSub').textContent = `Add retailer, loyalty value and notes in your Sheet later.${failed>0?' ('+failed+' failed)':''}`;
     document.getElementById('logConfirm').classList.add('show');
     document.querySelector('.action-row').style.display = 'none';
   } else {
@@ -452,8 +452,7 @@ function callAppsScript(fn, params) {
   return new Promise(resolve => {
     const url = APPS_SCRIPT_URL + '?fn=' + encodeURIComponent(fn) +
                 '&params=' + encodeURIComponent(JSON.stringify(params));
-    fetch(url, { redirect: 'follow' })
-      .then(r => r.json()).then(resolve).catch(() => resolve(null));
+    fetch(url, { redirect: 'follow' }).then(r => r.json()).then(resolve).catch(() => resolve(null));
   });
 }
 
@@ -461,40 +460,28 @@ function setProductDisplay(name, barcode, sourceType, sourceLabel) {
   document.getElementById('productName').textContent = name;
   document.getElementById('barcodeDisplay').textContent = barcode;
   const badge = document.getElementById('sourceBadge');
-  badge.textContent = sourceLabel;
-  badge.className = 'source-badge source-' + sourceType;
+  badge.textContent = sourceLabel; badge.className = 'source-badge source-' + sourceType;
 }
 
-function pct(val, ref) {
-  const d = ((val - ref) / ref) * 100;
-  return (d >= 0 ? '+' : '') + d.toFixed(1) + '%';
-}
-
-function esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
+function pct(val, ref) { const d=((val-ref)/ref)*100; return (d>=0?'+':'')+d.toFixed(1)+'%'; }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
 
 function resetAll() {
-  currentBarcode = null; currentProduct = null;
-  document.getElementById('cardProduct').style.display = 'none';
-  document.getElementById('cardOffer').style.display = 'none';
-  document.getElementById('resetBtn').style.display = 'none';
+  currentBarcode=null; currentProduct=null;
+  document.getElementById('cardProduct').style.display='none';
+  document.getElementById('cardOffer').style.display='none';
+  document.getElementById('resetBtn').style.display='none';
   document.getElementById('logConfirm').classList.remove('show');
   document.getElementById('comparison').classList.remove('show');
-  document.querySelector('.action-row').style.display = 'flex';
-  document.getElementById('offerPack').value = '';
-  document.getElementById('offerUnit').value = '';
-  document.getElementById('offerPrice').value = '';
-  document.getElementById('offerQty').value = '1';
-  document.getElementById('manualBarcode').value = '';
+  document.querySelector('.action-row').style.display='flex';
+  document.getElementById('offerPack').value='';
+  document.getElementById('offerUnit').value='';
+  document.getElementById('offerPrice').value='';
+  document.getElementById('offerQty').value='1';
+  document.getElementById('manualBarcode').value='';
   document.getElementById('processing').classList.remove('show');
+  document.getElementById('retryTip').classList.remove('show');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
